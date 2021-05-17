@@ -1144,6 +1144,32 @@ func (blkdev BlockDevice) deviceName(config *Config) string {
 	return string(blkdev.Driver)
 }
 
+//SpaprTPMProxyDevice is used for enabling guest to run in secure mode on ppc64le.
+type SpaprTPMProxyDevice struct {
+	ID       string
+	HostPath string
+}
+
+//Valid returns true if there is a valid structure defined for SpaprTPMProxyDevice
+func (dev SpaprTPMProxyDevice) Valid() bool {
+	return dev.ID != "" && dev.HostPath != ""
+}
+
+// QemuParams returns the qemu parameters built out of this device.
+func (dev SpaprTPMProxyDevice) QemuParams(Config *Config) []string {
+	var qemuParams []string
+	var devParams []string
+
+	devParams = append(devParams, "spapr-tpm-proxy")
+	devParams = append(devParams, fmt.Sprintf("id=%s", dev.ID))
+	devParams = append(devParams, fmt.Sprintf("host-path=%s", dev.HostPath))
+
+	qemuParams = append(qemuParams, "-device")
+	qemuParams = append(qemuParams, strings.Join(devParams, ","))
+
+	return qemuParams
+}
+
 // PVPanicDevice represents a qemu pvpanic device.
 type PVPanicDevice struct {
 	NoShutdown bool
